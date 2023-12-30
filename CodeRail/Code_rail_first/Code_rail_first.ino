@@ -121,7 +121,6 @@ void MoveToNextToken3(int sensMove)
 {
     int sensorState = lineFinder.readSensors();
     
-
     motor1.run(sensMove*motorSpeed1);
     motor2.run(sensMove*motorSpeed2);
     /*
