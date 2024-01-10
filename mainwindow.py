@@ -58,6 +58,8 @@ class MainWindow(QWidget):
         """
         try:
             self.send_bluetooth_message("on")                   #Envoi du message "on" au module Bluetooth pour activer le moteur
+            while self.worker.finished_operation == False:
+                continue
             self.button_start_notify.setDisabled(True)
             self.button_stop_notify.setDisabled(True)
             self.button_on.setDisabled(True)
@@ -75,6 +77,8 @@ class MainWindow(QWidget):
             #Arrêt de la réception des messages à l'aide des attributs correspondant à des booleens
             self.notifying = False
             self.worker.notifying = False
+            while self.worker.finished_operation == False:
+                continue
             del self.worker
             self.button_start_notify.setDisabled(False)
             self.button_stop_notify.setDisabled(True)
@@ -93,6 +97,8 @@ class MainWindow(QWidget):
             #Activation de la réception des message à l'aide de l'attribut étant un booleen et de la méthode send_bluetooth_message
             self.notifying = True
             self.send_bluetooth_message("")
+            while self.worker.started_notify == False:
+                continue
             self.button_start_notify.setDisabled(True)
             self.button_stop_notify.setDisabled(False)
             self.button_on.setDisabled(True)
@@ -108,6 +114,8 @@ class MainWindow(QWidget):
         """
         try:
             self.send_bluetooth_message("off")                  #Envoi du message "off" au module Bluetooth pour arrêter le moteur
+            while self.worker.finished_operation == False:
+                continue
             self.button_start_notify.setDisabled(False)
             self.button_stop_notify.setDisabled(True)
             self.button_on.setDisabled(False)
@@ -121,7 +129,6 @@ class MainWindow(QWidget):
         :param message: string; Message à envoyer au module Bluetooth
         :return:
         """
-
         #Création du client Bluetooth (sans se connecter)
         self.worker = BluetoothClient(ADDRESS, WRITE_CHAR_UUID, NOTIFY_CHAR_UUID, self.notifying, message)
 

@@ -31,6 +31,8 @@ class BluetoothClient(QRunnable):
         self.characteristic_notify_uuid = charachteristic_notify_uuid
         self.message = message
         self.notifying = notifying
+        self.finished_operation = False
+        self.started_notify = False
         #self.signals = pyqtSignal()
 
     async def write_to_device(self):
@@ -44,9 +46,11 @@ class BluetoothClient(QRunnable):
         try:
             await client.connect()                                                                  #Connexion au serveur de manière asynchrone
             print("Connecté.")
-            await client.write_gatt_char(self.characteristic_uuid, message_encoded, response=True)  #Ecriture du message au module Bluetooth
+            #await client.write_gatt_char(self.characteristic_uuid, message_encoded, response=True)  #Ecriture du message au module Bluetooth
+            await client.write_gatt_char(self.characteristic_uuid, message_encoded)
             print(f"Message '{self.message}' envoyé.")
             await client.disconnect()                                                               #Deconnexion du module Bluetooth
+            self.finished_operation = True
             print("Déconnecté.")
         except Exception as e:
             print(e)
@@ -85,11 +89,13 @@ class BluetoothClient(QRunnable):
             print("Connecté.")
             await client.start_notify(self.characteristic_notify_uuid, self.notification_handler)       #Réception des messages venant du serveur
             print("Notification activée. En attente de données...")
+            self.started_notify = True
             while self.notifying:
                 await asyncio.sleep(0.2)                                                                #Réception tant que self.notifying est à True
             await client.stop_notify(self.characteristic_notify_uuid)                                   #Arrêt de la réception dès que self.notifying est à False
             print("Notification désactivée.")
             await client.disconnect()                                                                   #Déconnexion du client
+            self.finished_operation = True
             print("Déconnecté.")
         except Exception as e:
             print(e)
