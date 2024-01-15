@@ -1,6 +1,7 @@
 import asyncio
 from bleak import BleakClient
 from PyQt5.QtCore import  QObject, QRunnable, pyqtSignal
+import time
 
 #Adresse MAC du module Bluetooth
 ADDRESS = "70:3E:97:E3:65:1B"
@@ -125,6 +126,7 @@ class BluetoothClient(QRunnable):
             else:
                 #print(data.decode('utf-8'))
                 self.notification = data.decode('utf-8')
+                time.sleep(0.05)
                 self.worker_signal.result.emit(self.notification)
         except Exception as e:
             print(e)

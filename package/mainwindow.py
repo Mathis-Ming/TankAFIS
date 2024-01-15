@@ -1,7 +1,8 @@
 from datetime import datetime
+import os
 from PyQt5.QtWidgets import QWidget, QListWidget, QPushButton, QGridLayout, QListWidgetItem, QSizePolicy, QLabel, QLCDNumber
 from PyQt5.QtCore import QThreadPool, Qt, QTimer, pyqtSignal
-from PyQt5.Qt import QFont, QStyle
+from PyQt5.Qt import QFont, QStyle, QPixmap
 from PyQt5.QtGui import QCursor, QColor
 from package.API.Bluetooth_API import BluetoothClient, ADDRESS, WRITE_CHAR_UUID, NOTIFY_CHAR_UUID
 from package.Items.circular_indication import CircularIndicator
@@ -9,6 +10,9 @@ from package.Items.state_indication import StateIndicator
 from package.Items.progress_dialog import ProgressBarThread
 from package.Items import custom_icon
 from package.Items.verify_connection import VerifyConn, VerifyNotConn
+
+script_directory = os.path.dirname(os.path.abspath(__file__))
+esilv_logo_file_path = os.path.join(script_directory, "..\\resources\logo_esilv_png_couleur.png")
 
 
 class MainWindow(QWidget):
@@ -63,6 +67,7 @@ class MainWindow(QWidget):
         self.lbl_writing = QLabel("Writing")
         self.lbl_moving = QLabel("Moving")
         self.lcd_timer = QLCDNumber()
+        self.lbl_logo_esilv = QLabel(self)
 
 
     def modify_widgets(self):
@@ -89,6 +94,11 @@ class MainWindow(QWidget):
         self.btn_stop.setIcon(icon)
         self.lcd_timer.setSegmentStyle(QLCDNumber.Filled)
         self.lcd_timer.display(f"0:00")
+        pixmap = QPixmap(esilv_logo_file_path)
+        pixmap = pixmap.scaled(100,100)
+        self.lbl_logo_esilv.setPixmap(pixmap)
+        self.lbl_logo_esilv.setAlignment(Qt.AlignCenter)
+
         self.btn_disconnect.setDisabled(True)
         self.btn_start.setDisabled(True)
         self.btn_pause.setDisabled(True)
@@ -101,9 +111,9 @@ class MainWindow(QWidget):
         self.main_layout.addWidget(self.lw_instructions, 10, 3, 5, 10)
         self.main_layout.addWidget(self.btn_connect, 0, 12, 1, 1)
         self.main_layout.addWidget(self.btn_disconnect, 1, 12, 1, 1)
-        self.main_layout.addWidget(self.btn_start, 0, 0, 1, 2)
-        self.main_layout.addWidget(self.btn_pause, 1, 0, 1, 2)
-        self.main_layout.addWidget(self.btn_stop, 2, 0, 1, 2)
+        self.main_layout.addWidget(self.btn_start, 0, 3, 1, 2)
+        self.main_layout.addWidget(self.btn_pause, 1, 3, 1, 2)
+        self.main_layout.addWidget(self.btn_stop, 2, 3, 1, 2)
         self.main_layout.addWidget(self.circular_indic, 0, 11, 1, 1)
         self.main_layout.addWidget(self.btn_clear_notif, 15, 12, 1, 1)
         self.main_layout.addWidget(self.reading_indic, 11, 0, 1, 1)
@@ -113,6 +123,8 @@ class MainWindow(QWidget):
         self.main_layout.addWidget(self.lbl_writing, 12, 1, 1, 2)
         self.main_layout.addWidget(self.lbl_moving, 13, 1, 1, 2)
         self.main_layout.addWidget(self.lcd_timer, 15, 0, 1, 2)
+        self.main_layout.addWidget(self.lbl_logo_esilv, 0, 0, 3, 3)
+
 
 
     def setup_connections(self):
@@ -231,29 +243,36 @@ class MainWindow(QWidget):
         data = f'{datetime.now().strftime("%H:%M:%S")} | {data}'
         if "Warning" in data:
             lw_item = QListWidgetItem(data)
-            lw_item.setFont(QFont('Arial', 10))
-            lw_item.setForeground(Qt.darkRed)
+            lw_item.setFont(QFont('Arial', 12))
+            lw_item.setForeground(Qt.darkYellow)
             self.lw_instructions.addItem(lw_item)
             last_item = self.lw_instructions.item(self.lw_instructions.count()-1)
             self.lw_instructions.scrollToItem(last_item)
         elif "Notification" in data:
             lw_item = QListWidgetItem(data)
-            lw_item.setFont(QFont('Arial', 10))
-            lw_item.setForeground(Qt.darkYellow)
+            lw_item.setFont(QFont('Arial', 12))
+            lw_item.setForeground(Qt.white)
+            self.lw_instructions.addItem(lw_item)
+            last_item = self.lw_instructions.item(self.lw_instructions.count() - 1)
+            self.lw_instructions.scrollToItem(last_item)
+        elif "Error" in data:
+            lw_item = QListWidgetItem(data)
+            lw_item.setFont(QFont('Arial', 12))
+            lw_item.setForeground(Qt.darkRed)
             self.lw_instructions.addItem(lw_item)
             last_item = self.lw_instructions.item(self.lw_instructions.count() - 1)
             self.lw_instructions.scrollToItem(last_item)
         elif "Sent" in data:
             lw_item = QListWidgetItem(data)
-            lw_item.setFont(QFont('Arial', 10))
+            lw_item.setFont(QFont('Arial', 12))
             lw_item.setForeground(Qt.white)
             self.lw_instructions.addItem(lw_item)
             last_item = self.lw_instructions.item(self.lw_instructions.count() - 1)
             self.lw_instructions.scrollToItem(last_item)
         elif "Reading" in data:
             lw_item = QListWidgetItem(data)
-            lw_item.setFont(QFont('Arial', 10))
-            lw_item.setForeground(Qt.white)
+            lw_item.setFont(QFont('Arial', 12))
+            lw_item.setForeground(Qt.magenta)
             self.lw_instructions.addItem(lw_item)
             last_item = self.lw_instructions.item(self.lw_instructions.count() - 1)
             self.lw_instructions.scrollToItem(last_item)
@@ -268,8 +287,8 @@ class MainWindow(QWidget):
                 self.moving = False
         elif "Writing" in data:
             lw_item = QListWidgetItem(data)
-            lw_item.setFont(QFont('Arial', 10))
-            lw_item.setForeground(Qt.white)
+            lw_item.setFont(QFont('Arial', 12))
+            lw_item.setForeground(Qt.magenta)
             self.lw_instructions.addItem(lw_item)
             last_item = self.lw_instructions.item(self.lw_instructions.count() - 1)
             self.lw_instructions.scrollToItem(last_item)
@@ -284,8 +303,8 @@ class MainWindow(QWidget):
                 self.moving = False
         elif "Moving" in data:
             lw_item = QListWidgetItem(data)
-            lw_item.setFont(QFont('Arial', 10))
-            lw_item.setForeground(Qt.white)
+            lw_item.setFont(QFont('Arial', 12))
+            lw_item.setForeground(Qt.magenta)
             self.lw_instructions.addItem(lw_item)
             last_item = self.lw_instructions.item(self.lw_instructions.count() - 1)
             self.lw_instructions.scrollToItem(last_item)
